@@ -14,22 +14,36 @@
 	precios db 150,100,65,90,30  ;vector de precios
 	nombres db "leche","agua","galletas","jugo","papas"
 
+
 .code
+	extrn inicioJuego:proc
+	extrn clearScreen:proc
+	extrn ocultarCursor:proc
 	extrn carga:proc
 
 	main proc
     	mov ax, @data 
     	mov ds, ax
 
-    	;llamar a interrupcion que limpia pantalla
-    	inicio:
+		bienvenida:
+			call clearScreen
+			call inicioJuego
+
+			lea bx, caracter
+			mov si, 2
+			mov al, 0dh
+			call carga
+
+			cmp caracter, 0dh
+			jmp inicio
+		jmp bienvenida
+
+		inicio:
+
+			lea bx, msg2
+			int 21h
 			
-
 		jmp inicio
-	    	
-
-
-
 
    		fin:
     		mov ax, 4c00h
