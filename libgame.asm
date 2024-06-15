@@ -20,6 +20,7 @@ public inicioJuego
 public clearScreen
 public ocultarCursor
 public carga
+public capturarTeclaTeclado
 
 inicioJuego proc
 
@@ -47,6 +48,14 @@ clearScreen PROC
 	ret
 clearScreen ENDP
 
+capturarTeclaTeclado proc
+        ;Deja en AH el codigo de la tecla presionada
+        ;Deja en AL el codigo ASCII de la tecla presionada
+    	mov ah, 00h      
+    	int 16h          
+
+capturarTeclaTeclado endp
+
 
 ocultarCursor proc
 
@@ -57,42 +66,26 @@ ocultarCursor proc
 ocultarCursor endp
 
 carga proc
-; Llena una variable con caracteres ASCII, termina la carga con un carácter de finalización en AL.
-; Recibe offset en BX, y carácter de finalización en AL
-; Recibe por SI límite de caracteres
-
-        push bx
+        push bx ; PROFILAXIS
         push dx
         push ax
 
-        mov dl, al         ; DL contiene el carácter de finalización
-        xor dh, dh         ; DH se limpia por si acaso
-
-cargaTexto:
-        mov al, [bx]      ; Carga el byte apuntado por BX en AL
-        cmp al, dh        ; Compara con DH (para verificar si es el fin del string)
-        je finCarga       ; Si es 0 (fin de string), termina la carga
-
-        cmp bx, si        ; Compara BX con SI (límite de caracteres)
-        jae finCarga      ; Si BX >= SI, termina la carga
-
+        ;mov bx, dx ; CARGO EL OFFSET EN BX
+        mov dl, al ; MUEVO EL CARACTER DE FINALIZACIÖN A DL
+        xor dh, dh 
+ cargaTexto:
         mov ah, 1
-        int 21h           ; Muestra el carácter en pantalla
-
-        cmp al, dl        ; Compara con el carácter de finalización
-        je finCarga       ; Si es igual al carácter de finalización, termina la carga
-        
-        mov [bx], al      ; Guarda el carácter en la posición actual de BX
-        inc bx            ; Avanza al siguiente byte
-
-        jmp cargaTexto    ; Repite el ciclo de carga
-
-finCarga:
+        int 21h
+        cmp al, dl
+        je finCarga 
+        mov [bx], al 
+        inc bx
+ jmp cargaTexto
+ finCarga:
         pop ax
         pop dx
         pop bx
-        ret
+ ret
 carga endp
-
 
 end
