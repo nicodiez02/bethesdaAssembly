@@ -2,106 +2,110 @@
 .model small
 .stack 100h
 .data
-	msg1 DB "Welcome T-Rex Game ! ",0dh,0ah, 24h
-	msg2 DB "Presiona enter para empezar ",0dh,0ah, 24h
-	msg3 DB "Presione Esc para volver al menu principal",0dh,0ah, 24h
+
+	mensaje1 db "Esta es la opcion uno",0dh,0ah,24h
+	mensaje2 db "Con que caracter finaliza la carga?",0dh,0ah,24h
+	mensaje3 db "Presione Esc para salir",0dh,0ah,24h
+	mensaje4 db "A continuacion ingrese su nick con tres caracteres maximo:",0dh,0ah,24h
 	menu db "<< Menu >>",0dh,0ah
-    	 db"<1> Iniciar",0dh,0ah
-   		 db"<2> Ver puntuacion",0dh,0ah
-		 db"<3> Salir", 0dh, 0ah, 24h
+	db"<1> Iniciar juego",0dh,0ah
+	db"<2> Ver puntuacion",0dh,0ah
+	db"<3> Salir",0dh,0ah,24h
 
-
-	salto db 0dh,0ah,24h
-
-	texto db 255 dup (24h),0dh,0ah,24h
-	opcion db "0",0dh,0ah,24h ;guarda la opcion del usuario
-	cantidad db 0
-	caracter db "0",0dh,0ah,24h ;corresponde al caracter de finalizacion
-	nroAscii db "000",0dh,0ah,24h
-	precios db 150,100,65,90,30  ;vector de precios
-	nombres db "leche","agua","galletas","jugo","papas"
 	opcionInv db "Opcion incorrecta",0dh,0ah,24h
+	salto db 0dh,0ah, 24h
 
+	nickname db 255 dup (24h),0dh,0ah,24h
+	opcion db "0",0dh,0ah,24h
+	cantidad db 0
+	caracter db "0",0dh,0ah,24h
+	nroAscii db "000",0dh,0ah,24h
 
 .code
-	extrn inicioJuego:proc
-	extrn clearScreen:proc
-	extrn ocultarCursor:proc
-	extrn carga:proc
-	extrn capturarTeclaTeclado:proc
+    extrn clearScreen:proc
+    extrn inicioJuego:proc
+    extrn capturarTeclaTeclado:proc
+    extrn carga:proc
+main proc
+    mov ax, @data 
+    mov ds, ax 
 
-	main proc
-    	mov ax, @data 
-    	mov ds, ax
+   	call clearScreen
+	call inicioJuego
 
-			call clearScreen
-			call inicioJuego
+	bienvenida:
+		call capturarTeclaTeclado
+		cmp al, 20h
+		je inicio
+		
+		cmp al, 1Bh
+		je fin
 
-		bienvenida:
-			call capturarTeclaTeclado
-			cmp al, 20h
-			je inicio
-			
-			cmp al, 1Bh
-			je fin
+	jmp bienvenida
+	inicio:
 
-		jmp bienvenida
-		inicio:
+		call clearScreen
+		lea bx, menu
+		int 81h
 
-			call clearScreen
-			lea bx, menu
+		lea bx, opcion ;Lee el ascii de la opcion pulsada
+		mov cx, 3
+		mov al, 0dh
+    	call carga
+		call clearScreen
+
+		cmp opcion, '1'
+    	je opcion1
+
+		cmp opcion, '2'
+    	je opcion2
+
+		cmp opcion, '3'
+    	je fin
+
+		jmp invalido
+
+		opcion1:
+			lea bx, mensaje4
 			int 81h
 
-			lea bx, opcion ;Lee el ascii de la opcion pulsada
-    		mov al, 0dh
-    		call carga
+			lea bx, nickname
+			mov al, 0dh
+			call carga
 
-			cmp opcion, 31h ;'2'
-    		je opcion2
-		    jne invalido
-
+			lea bx, nickname
+			int 81h
 		
+		jmp esperarPorSalida
+
 		opcion2:
-			lea bx, msg1
-			int 81
+			lea bx, mensaje1
+			int 81h
 
-			lea bx, msg3
-			int 81
+			lea bx, mensaje3
+			int 81h
+		jmp esperarPorSalida
 
-			salirOpcion2:
-				call capturarTeclaTeclado	
-				cmp ah, 01h
-				je inicio
-		jmp salirOpcion2
 
 		invalido:
 			lea bx, opcionInv
-			int 81
+			int 81h
 
-			lea bx, msg3
-			int 81
+			lea bx, mensaje3
+			int 81h
+		jmp esperarPorSalida
 
-			salirOpcionInvalida:
+		esperarPorSalida: ;Funcion para volver al menu principal despúes de entrar a alguna opcion
 				call capturarTeclaTeclado	
 				cmp ah, 01h
 				je inicio
-		jmp salirOpcionInvalida
-
-
-
-
-
-
-
-
-
+		jmp esperarPorSalida
 
 		juego:
 		jmp juego
 
-
-   		fin:
-    		mov ax, 4c00h
-    		int 21h
-	main endp
+	fin:
+		mov ax, 4c00h
+		int 21h
+main endp
 end
